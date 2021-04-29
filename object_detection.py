@@ -3,7 +3,7 @@ import numpy as np
 
 def nothing(x):
     pass
-
+cap = cv.VideoCapture('videos/cats.mp4')
 cv.namedWindow('Tracking')
 cv.createTrackbar('LH', 'Tracking', 0, 255, nothing)
 cv.createTrackbar('LS', 'Tracking', 0, 255, nothing)
@@ -13,32 +13,36 @@ cv.createTrackbar('US', 'Tracking', 255, 255, nothing)
 cv.createTrackbar('UV', 'Tracking', 255, 255, nothing)
 
 while True:
-    frame = cv.imread('opencv-master/samples/data/smarties.png')
+    # frame = cv.imread('opencv-master/samples/data/smarties.png')
     
-    hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+    ret,frame = cap.read()
     
-    l_h = cv.getTrackbarPos('LH', 'Tracking')
-    l_s = cv.getTrackbarPos('LS', 'Tracking')
-    l_v = cv.getTrackbarPos('LV', 'Tracking')
+    if ret:
+        hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
     
-    u_h = cv.getTrackbarPos('UH', 'Tracking')
-    u_s = cv.getTrackbarPos('US', 'Tracking')
-    u_v = cv.getTrackbarPos('UV', 'Tracking')
+        l_h = cv.getTrackbarPos('LH', 'Tracking')
+        l_s = cv.getTrackbarPos('LS', 'Tracking')
+        l_v = cv.getTrackbarPos('LV', 'Tracking')
+        
+        u_h = cv.getTrackbarPos('UH', 'Tracking')
+        u_s = cv.getTrackbarPos('US', 'Tracking')
+        u_v = cv.getTrackbarPos('UV', 'Tracking')
 
-    l_b = np.array([l_h, l_s, l_v])
-    u_b = np.array([u_h, u_s, u_v])
+        l_b = np.array([l_h, l_s, l_v])
+        u_b = np.array([u_h, u_s, u_v])
+        
+        #threshold only blue color
+        mask_blue = cv.inRange(hsv, l_b, u_b)
+        
+        res = cv.bitwise_and(frame, frame, mask=mask_blue)
+        
+        cv.imshow('frame', frame)
+        cv.imshow('mask', mask_blue)
+        cv.imshow('result', res)
     
-    #threshold only blue color
-    mask_blue = cv.inRange(hsv, l_b, u_b)
-    
-    res = cv.bitwise_and(frame, frame, mask=mask_blue)
-    
-    cv.imshow('frame', frame)
-    cv.imshow('mask', mask_blue)
-    cv.imshow('result', res)
-    
-    key = cv.waitKey(1)
+    key = cv.waitKey(20)
     if key == 27:
         break
     
+cap.release()
 cv.destroyAllWindows()
